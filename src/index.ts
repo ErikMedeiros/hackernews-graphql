@@ -2,13 +2,12 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { schema } from "./schema";
 import { context, type Context } from "./context";
+import { env } from "./utils/env";
 
 const server = new ApolloServer<Context>({ schema });
-const port = 3000;
 
-startStandaloneServer(server, {
-  listen: { port },
-  context: async () => context,
-}).then(({ url }) => console.log(`[SERVER]: running on ${url}`));
+startStandaloneServer(server, { listen: { port: env.PORT }, context }).then(
+  ({ url }) => console.log(`[SERVER]: running on ${url}`)
+);
 
 export { server };

@@ -36,7 +36,12 @@ const LinkMutation = extendType({
     t.nonNull.field("post", {
       type: "Link",
       args: { description: nonNull(stringArg()), url: nonNull(stringArg()) },
-      resolve: (_, args, { prisma }) => prisma.link.create({ data: args }),
+      resolve: (_, args, { prisma, userId }) => {
+        if (!userId) throw new Error("unauthorized");
+        return prisma.link.create({
+          data: { ...args, postedBy: { connect: { id: userId } } },
+        });
+      },
     });
     t.nonNull.field("updateLink", {
       type: "Link",
