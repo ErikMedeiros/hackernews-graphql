@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Prisma
+migrations
+dev.db
+*.env*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
