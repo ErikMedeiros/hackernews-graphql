@@ -15,6 +15,7 @@ dist-ssr
 # Prisma
 migrations
 dev.db
+dev.db-journal
 *.env*
 
 # Editor directories and files
