@@ -9,7 +9,12 @@ const User = objectType({
     t.nonNull.list.nonNull.field("links", {
       type: "Link",
       resolve: ({ id }, _, { prisma }) =>
-        prisma.link.findMany({ where: { postedById: id } }),
+        prisma.user.findUniqueOrThrow({ where: { id } }).links(),
+    });
+    t.nonNull.list.nonNull.field("votes", {
+      type: "Link",
+      resolve: ({ id }, _, { prisma }) =>
+        prisma.user.findUniqueOrThrow({ where: { id } }).votes(),
     });
   },
 });

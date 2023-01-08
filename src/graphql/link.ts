@@ -11,6 +11,11 @@ const Link = objectType({
       resolve: ({ id }, _, { prisma }) =>
         prisma.link.findUnique({ where: { id } }).postedBy(),
     });
+    t.nonNull.list.nonNull.field("voters", {
+      type: "User",
+      resolve: ({ id }, _, { prisma }) =>
+        prisma.link.findUniqueOrThrow({ where: { id } }).voters(),
+    });
   },
 });
 
