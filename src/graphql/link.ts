@@ -6,6 +6,7 @@ const Link = objectType({
     t.nonNull.int("id");
     t.nonNull.string("description");
     t.nonNull.string("url");
+    t.nonNull.DateTime("createdAt");
     t.field("postedBy", {
       type: "User",
       resolve: ({ id }, _, { prisma }) =>
