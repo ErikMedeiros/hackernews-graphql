@@ -1,4 +1,15 @@
-import { objectType, extendType, nonNull, stringArg, intArg } from "nexus";
+import { Prisma } from "@prisma/client";
+import {
+  objectType,
+  extendType,
+  nonNull,
+  stringArg,
+  intArg,
+  inputObjectType,
+  enumType,
+  arg,
+  list,
+} from "nexus";
 
 const Link = objectType({
   name: "Link",
@@ -23,9 +34,38 @@ const Link = objectType({
 const LinkQuery = extendType({
   type: "Query",
   definition: (t) => {
-    t.nonNull.list.nonNull.field("feed", {
-      type: "Link",
-      resolve: (_, __, { prisma }) => prisma.link.findMany(),
+    t.nonNull.field("feed", {
+      type: "Feed",
+      args: {
+        keyword: stringArg(),
+        start: intArg(),
+        limit: intArg(),
+        orderBy: arg({ type: list(nonNull(LinkOrderByInput)) }),
+      },
+      resolve: async (
+        _,
+        { keyword: contains, start, limit, orderBy },
+        { prisma }
+      ) => {
+        const where = contains
+          ? { OR: [{ description: { contains } }, { url: { contains } }] }
+          : undefined;
+
+        const [links, count] = await prisma.$transaction([
+          prisma.link.findMany({
+            where,
+            skip: start ?? undefined,
+            take: limit ?? undefined,
+            orderBy: orderBy as
+              | Prisma.Enumerable<Prisma.LinkOrderByWithRelationInput>
+              | undefined,
+          }),
+          prisma.link.count({ where }),
+        ]);
+
+        const id = JSON.stringify({ keyword: contains, start, limit, orderBy });
+        return { links, count, id: "main-feed:" + id };
+      },
     });
     t.field("link", {
       type: "Link",
@@ -71,4 +111,24 @@ const LinkMutation = extendType({
   },
 });
 
-export { Link, LinkQuery, LinkMutation };
+const Sort = enumType({ name: "Sort", members: ["asc", "desc"] });
+
+const LinkOrderByInput = inputObjectType({
+  name: "LinkOrderByInput",
+  definition: (t) => {
+    t.field("description", { type: Sort });
+    t.field("url", { type: Sort });
+    t.field("createdAt", { type: Sort });
+  },
+});
+
+const Feed = objectType({
+  name: "Feed",
+  definition(t) {
+    t.nonNull.list.nonNull.field("links", { type: Link });
+    t.nonNull.int("count");
+    t.id("id");
+  },
+});
+
+export { Link, LinkQuery, LinkMutation, Sort, LinkOrderByInput, Feed };
